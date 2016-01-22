@@ -103,10 +103,32 @@ public class MainActivity extends Activity {
                                     Log.e("Der input ist:", readInputLine);
 
 
+                                    // werden wir angerufen?
+                                    String toWriteViaBluetooth= "";
+                                    if (beingCalled) {
+                                        toWriteViaBluetooth += "1";
+                                        Log.e("Wir werden angerufen: ", "true");
+                                    } else {
+                                        toWriteViaBluetooth += "0";
+                                    }
+
+                                    toWriteViaBluetooth += ",";
+
+                                    // Multimediabutton drücken
+                                    toWriteViaBluetooth += "";
+
+                                    toWriteViaBluetooth += ",";
+                                    // lauter
+                                    toWriteViaBluetooth += ",";
+                                    // leiser
+                                    toWriteViaBluetooth += ",";
+                                    // vibration links
+                                    toWriteViaBluetooth += ",";
+                                    // vibration rechts
+                                    toWriteViaBluetooth += ",";
 
 
-
-                                    bwriter.write("4");
+                                    bwriter.write(toWriteViaBluetooth);
                                     bwriter.newLine();
                                     bwriter.flush();
 
@@ -145,6 +167,8 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
         b1=(Button)findViewById(R.id.b1);
 
         TelephonyManager TelephonyMgr = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
