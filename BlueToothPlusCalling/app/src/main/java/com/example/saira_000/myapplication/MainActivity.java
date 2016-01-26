@@ -6,14 +6,10 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Handler;
 import android.os.Looper;
 import android.os.ParcelUuid;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
@@ -22,9 +18,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
-import android.widget.Toast;
+
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -37,56 +31,73 @@ import java.util.Set;
 public class MainActivity extends Activity {
     Button b1, b2;
     static boolean beingCalled = false;
-    Activity acti = this;
+
+    String stefanDilger = "0121416242646";
 
     public static OutputStream outputStream;
     public static InputStream inStream;
-    // Button b1,b2,b3,b4;
     private BluetoothAdapter BA;
     private Set<BluetoothDevice> pairedDevices;
 
 
     public String stateToBluetoothString(String state) {
-        String toWriteViaBluetooth= "";
+        boolean validInput = false;
+        String toWriteViaBluetooth= "+";    // if '+' is received by the mu-controller, the input is valid
+        String delimiter = ";";
+        toWriteViaBluetooth += delimiter;
 
-        toWriteViaBluetooth += ",";
-        // Multimediabutton drücken
+        // do you want to call somebody?
+        if (state.equals(stefanDilger)) {
+            validInput = true;  // vibrate first, call after vibration confirmation of the call
+        }
+
+        // press multimedia-button
         if (state.equals("0232636")) {
             toWriteViaBluetooth += "1";
+            validInput = true;
         } else {
             toWriteViaBluetooth += "0";
         }
 
-        toWriteViaBluetooth += ",";
+        toWriteViaBluetooth += delimiter;
         // leiser
         if (state.equals("015")) {
             toWriteViaBluetooth += "1";
+            validInput = true;
         } else {
             toWriteViaBluetooth += "0";
         }
 
-        toWriteViaBluetooth += ",";
+        toWriteViaBluetooth += delimiter;
         // lauter
         if (state.equals("045")) {
             toWriteViaBluetooth += "1";
+            validInput = true;
         } else {
             toWriteViaBluetooth += "0";
         }
 
-        toWriteViaBluetooth += ",";
-        // vibration links
+        toWriteViaBluetooth += delimiter;
+        // vibration left
         if (beingCalled) {
             toWriteViaBluetooth += "1";
         } else {
             toWriteViaBluetooth += "0";
         }
-        toWriteViaBluetooth += ",";
-        // vibration rechts
-        if (beingCalled) {
+        toWriteViaBluetooth += delimiter;
+        // vibration right
+        if (beingCalled || validInput) {
             toWriteViaBluetooth += "1";
         } else {
             toWriteViaBluetooth += "0";
         }
+        toWriteViaBluetooth += "\n";  // newline
+
+
+        if (state.equals(stefanDilger)) {
+            call();
+        }
+
         return toWriteViaBluetooth;
 
     }
@@ -94,8 +105,6 @@ public class MainActivity extends Activity {
     Thread thread2 = new Thread() {
         public void run() {
             Looper.prepare();
-        // void connectToBluetooth() {
-            Log.e("error", "Feeehler.");
             Log.e("error", "Initiation.");
             BluetoothAdapter blueAdapter = BluetoothAdapter.getDefaultAdapter();
             if (blueAdapter != null) {
@@ -103,16 +112,19 @@ public class MainActivity extends Activity {
                     Set<BluetoothDevice> bondedDevices = blueAdapter.getBondedDevices();
 
                     if(bondedDevices.size() > 0){
-                        //BluetoothDevice[] devices = (BluetoothDevice[])
-                        // BluetoothDevice[] devices = (BluetoothDevice[])
                         for (int i = 0; i < bondedDevices.toArray().length; i++) {
                             try {
                                 Log.e("error", "Pairable device found.");
                                 BluetoothDevice  device = (BluetoothDevice) bondedDevices.toArray()[i];
                                 device.getBluetoothClass();
 
-                                if (device.getName() != " SeeedBTSlave") {
+                                if (!device.getName().contains("SeeedBTSlave")) {
+
                                     Log.e("Der name ist:", device.getName());
+                                    // continue;
+
+                                } else {
+                                    Log.e("Richtiger Name:", device.getName());
 
                                 }
                                 Log.e("Der name ist:", device.getName());
@@ -137,10 +149,12 @@ public class MainActivity extends Activity {
                                 double ay = 0;
                                 double az = 0;
 
-                                for (int j = 0; j < 500; j++) {
+                                for (int j = 0; j < 1; j++) {
                                     bwriter.write("5");
                                     bwriter.newLine();
                                     bwriter.flush();
+                                    String print = "" + j;
+                                    Log.e("Initializing", print);
                                 }
 
                                 while (true) {
@@ -148,7 +162,7 @@ public class MainActivity extends Activity {
                                     String readInputLine = br.readLine();
                                     Log.e("Der input ist:", readInputLine);
 
-                                    String[] splitInput = readInputLine.split(",");
+                                    String[] splitInput = readInputLine.split(";");
 
                                     String toWriteViaBluetooth = "";
 
@@ -162,27 +176,13 @@ public class MainActivity extends Activity {
 
 
                                     bwriter.write(toWriteViaBluetooth);
-                                    bwriter.newLine();
+                                  //   bwriter.newLine();
                                     bwriter.flush();
                                 }
-
-    /*
-                                while (true) {
-                                    String readInputLine = br.readLine();
-                                    Log.e("Der input ist:", readInputLine);
-                                }
-
-    */
                             } catch (Throwable t) {
                                 Log.e("error", "No appropriate paired devices.");
                             }
                         }
-                        /*BluetoothDevice device = devices[0];
-                        ParcelUuid[] uuids = device.getUuids();
-                        BluetoothSocket socket = device.createRfcommSocketToServiceRecord(uuids[0].getUuid());
-                        socket.connect();
-                        outputStream = socket.getOutputStream();
-                        inStream = socket.getInputStream();*/
                     }
 
                     Log.e("error", "No appropriate paired devices.");
@@ -217,50 +217,12 @@ public class MainActivity extends Activity {
         b2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                thread2.start();// connectToBluetooth();
-                /* MyBluetoothThread mBT = new MyBluetoothThread(acti);
-                Thread thread3 = new Thread(mBT);
-                thread3.run(); //in current thread*/
+                thread2.start();
             }
         });
-
-
-        // DialogInterface.OnClickListener Listener = new OnClickListener();
-        // thread2.start();
-
-
-
     }
 
 
-/*
-
-    Thread thread = new Thread() {
-            public void run() {
-                Looper.prepare();
-                while (true) {
-                    try {
-                        if (beingCalled) {
-                            // do something here
-                            Toast.makeText(getApplicationContext(), "im being called", Toast.LENGTH_LONG).show();
-                            Thread.sleep(1000);
-                        } else {
-                            // Toast.makeText(getApplicationContext(), "im not called", Toast.LENGTH_LONG).show();
-                        }
-                    } catch (InterruptedException e) {
-                        // Toast.makeText(getApplicationContext(), "error", Toast.LENGTH_LONG).show();
-                    }
-                }
-            }
-        };
-        thread.start();
-
-
-
-        // connectToBluetooth();
-    }
-
-*/
     private void call() {
         try {
             Intent callIntent = new Intent(Intent.ACTION_CALL);
@@ -283,7 +245,6 @@ public class MainActivity extends Activity {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
@@ -293,35 +254,3 @@ public class MainActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 }
-
-
-class MyBluetoothThread implements Runnable {
-    Activity act;
-    MyBluetoothThread(Activity act_) {
-        act = act_;
-    }
-    @Override
-    public void run() {
-
-        // check if it's run in main thread, or background thread
-        if(Looper.getMainLooper().getThread()==Thread.currentThread()){
-            //in main thread
-            // textInfo.setText("in main thread");
-            Log.e("bluetooth", "In main Thread");
-        }else{
-            //in background thread
-
-            act.runOnUiThread(new Runnable() {
-
-                @Override
-                public void run() {
-                    Log.e("bluetooth", "In background Thread");
-                }
-
-            });
-        }
-
-    }
-
-}
-

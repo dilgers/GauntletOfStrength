@@ -8,7 +8,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
-import android.util.Log;
 import android.widget.Toast;
 
 /**
@@ -26,14 +25,12 @@ class CallStateListener extends PhoneStateListener {
     public void onCallStateChanged(int state, String incomingNumber) {
         switch (state) {
             case TelephonyManager.CALL_STATE_RINGING:
-                // called when someone is ringing to this phone
-
+                // somone is calling
                 Toast.makeText(mActivity,
                         "Incoming: " + incomingNumber,
                         Toast.LENGTH_SHORT).show();
 
                 MainActivity.beingCalled = true;
-                // MainActivity.run();
                 break;
             default:
                 MainActivity.beingCalled = false;
