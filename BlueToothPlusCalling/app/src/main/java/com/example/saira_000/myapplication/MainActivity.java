@@ -45,6 +45,52 @@ public class MainActivity extends Activity {
     private BluetoothAdapter BA;
     private Set<BluetoothDevice> pairedDevices;
 
+
+    public String stateToBluetoothString(String state) {
+        String toWriteViaBluetooth= "";
+
+        toWriteViaBluetooth += ",";
+        // Multimediabutton drücken
+        if (state.equals("0232636")) {
+            toWriteViaBluetooth += "1";
+        } else {
+            toWriteViaBluetooth += "0";
+        }
+
+        toWriteViaBluetooth += ",";
+        // leiser
+        if (state.equals("015")) {
+            toWriteViaBluetooth += "1";
+        } else {
+            toWriteViaBluetooth += "0";
+        }
+
+        toWriteViaBluetooth += ",";
+        // lauter
+        if (state.equals("045")) {
+            toWriteViaBluetooth += "1";
+        } else {
+            toWriteViaBluetooth += "0";
+        }
+
+        toWriteViaBluetooth += ",";
+        // vibration links
+        if (beingCalled) {
+            toWriteViaBluetooth += "1";
+        } else {
+            toWriteViaBluetooth += "0";
+        }
+        toWriteViaBluetooth += ",";
+        // vibration rechts
+        if (beingCalled) {
+            toWriteViaBluetooth += "1";
+        } else {
+            toWriteViaBluetooth += "0";
+        }
+        return toWriteViaBluetooth;
+
+    }
+
     Thread thread2 = new Thread() {
         public void run() {
             Looper.prepare();
@@ -102,37 +148,22 @@ public class MainActivity extends Activity {
                                     String readInputLine = br.readLine();
                                     Log.e("Der input ist:", readInputLine);
 
+                                    String[] splitInput = readInputLine.split(",");
 
-                                    // werden wir angerufen?
-                                    String toWriteViaBluetooth= "";
-                                    if (beingCalled) {
-                                        toWriteViaBluetooth += "1";
-                                        Log.e("Wir werden angerufen: ", "true");
+                                    String toWriteViaBluetooth = "";
+
+                                    if (splitInput[0].indexOf('0') != 0) {
+                                        Log.e("Invalid Input:", splitInput[0]);
+                                        toWriteViaBluetooth = "f";
                                     } else {
-                                        toWriteViaBluetooth += "0";
+                                        // valid input, continue giving useful output
+                                        toWriteViaBluetooth = stateToBluetoothString(splitInput[0]);
                                     }
-
-                                    toWriteViaBluetooth += ",";
-
-                                    // Multimediabutton drücken
-                                    toWriteViaBluetooth += "";
-
-                                    toWriteViaBluetooth += ",";
-                                    // lauter
-                                    toWriteViaBluetooth += ",";
-                                    // leiser
-                                    toWriteViaBluetooth += ",";
-                                    // vibration links
-                                    toWriteViaBluetooth += ",";
-                                    // vibration rechts
-                                    toWriteViaBluetooth += ",";
 
 
                                     bwriter.write(toWriteViaBluetooth);
                                     bwriter.newLine();
                                     bwriter.flush();
-
-
                                 }
 
     /*
