@@ -11,8 +11,12 @@ const int led = LED_BUILTIN;
 
 void setup() {
   pinMode(led, OUTPUT);
-  digitalWrite(led, LOW);
-  
+  digitalWrite(led, HIGH);
+  pinMode(out1, OUTPUT);
+    digitalWrite(out1, HIGH);  // let it float
+      pinMode(out2, OUTPUT);
+    digitalWrite(out2, LOW);  // let it float
+  /*
   pinMode(out1, INPUT);
   digitalWrite(out1, LOW);  // let it float
   pinMode(out2, INPUT);
@@ -22,10 +26,14 @@ void setup() {
   
   pinMode(in1, INPUT);
   pinMode(in2, INPUT);
-  pinMode(in3, INPUT);
+  pinMode(in3, INPUT);*/
 }
 
 void loop() {
+    digitalWrite(led, HIGH);
+        digitalWrite(out1, HIGH);  // let it float
+    digitalWrite(out2, LOW);  // let it float
+  /*
  if (!digitalRead(in1)) {
     pinMode(out1, OUTPUT);
     digitalWrite(out1, LOW);
@@ -53,10 +61,10 @@ void loop() {
   if (digitalRead(in1) && digitalRead(in2) && digitalRead(in3)) {
     digitalWrite(led, HIGH);
     //delay(1000);
-    digitalWrite(led, LOW);
+    // digitalWrite(led, LOW);
     //delay(1000);
   } else {
   digitalWrite(led, LOW);
-  }
+  }*/
 }
 
